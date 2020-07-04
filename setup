@@ -1,0 +1,32 @@
+#!/bin/bash
+clear
+
+##Create directory
+mkdir -p arch-root aur-package local-repo
+CHROOT=arch-root
+##Check create repo or not yet
+echo "Create cumtom repo."
+read -p "Repo name: " REPONAME
+FINDREPO=$(find local-repo/$REPONAME.db | awk -F"." '{printf $1}')
+if [[ "local-repo/$REPONAME" == "$FINDREPO" ]] ;then
+    echo "Repo already exists."
+else
+    repo-add local-repo/"$REPONAME".db.tar.xz #Create repo db
+    if [[ -f local-repo/$REPONAME.db ]] ; then
+        echo "Created success."
+    else
+        echo "Created Fail."
+    fi
+fi
+
+##create fakeroot for build aur package
+echo 
+echo "Create fakeroot."
+read -s -p "Password: " PASSWORD
+echo
+[[ -d "$CHROOT/root" ]] || echo "$PASSWORD" | mkarchroot -C /etc/pacman.conf "$CHROOT/root" \
+    bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs \
+    file filesystem findutils gawk gcc-libs gettext glibc grep gzip inetutils \
+    iproute2 iputils less licenses linux logrotate man-db man-pages mdadm \
+    pacman pciutils perl procps-ng psmisc s-nail sed shadow sysfsutils \
+    systemd-sysvcompat tar texinfo usbutils util-linux which base-devel
