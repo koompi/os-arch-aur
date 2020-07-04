@@ -16,7 +16,7 @@ while read line; do
   if pacman -Qs $line > /dev/null ; then
     echo "The package $line is installed"
   else
-    sudo -S pacman -S $line --noconfirm
+    sudo -S pacman -Sy $line --noconfirm
   fi
 done < $DEPENDENCY_LIST
 
