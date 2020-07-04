@@ -21,7 +21,6 @@ PACKAGES=$(pwd)/aur-package/*
 PACKAGE_LIST=$(pwd)/package-list
 
 AUR_PACKAGE=$(pwd)/aur-package/
-DEPENDENCY_LIST=$(pwd)/dependency
 
 PACKAGE_UPDATE=$(pwd)/package-update
 PACKAGE_BUILD_FAIL=$(pwd)/package-build-fail
@@ -49,16 +48,6 @@ while read line; do
     cd $AUR_PACKAGE && git clone https://aur.archlinux.org/"$line".git
     echo "clone $line successfull"
 done < $PACKAGE_LIST
-
-#check dependency for build aur package in dependency
-echo -e "${YELLOW}Installing dependencies...${NC}"
-while read line; do
-  if pacman -Qs $line > /dev/null ; then
-    echo "The package $line is installed"
-  else
-    sudo -S pacman -S $line --noconfirm
-  fi
-done < $DEPENDENCY_LIST
 
 #start build aur package
 echo -e "${YELLOW}Starting build...${NC}"

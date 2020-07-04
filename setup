@@ -1,6 +1,25 @@
 #!/bin/bash
 clear
 
+#color
+RED='\033[0;31m'
+YELLOW='\033[0;93m'
+BULE='\033[0;94m'
+MAGENTA='\033[0;35m'
+NC='\033[0m'
+
+DEPENDENCY_LIST=$(pwd)/dependency
+
+#check dependency for build aur package in dependency
+echo -e "${YELLOW}Installing dependencies...${NC}"
+while read line; do
+  if pacman -Qs $line > /dev/null ; then
+    echo "The package $line is installed"
+  else
+    sudo -S pacman -S $line --noconfirm
+  fi
+done < $DEPENDENCY_LIST
+
 ##Create directory
 mkdir -p arch-root aur-package local-repo
 CHROOT=arch-root
