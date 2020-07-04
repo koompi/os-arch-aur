@@ -35,3 +35,13 @@ rsync -av $(pwd)/local-repo/ username@[IP Address]:[localtion-directory]
 ```
 
 *Note: `location-directory` is location path on server.*
+
+
+### AURsync
+
+For `aursync` to work, we need to add a repository to `/etc/pacman.conf`
+
+```
+[reponame]
+SigLevel = Never
+Server = https://IP-server/repo/x86_64/
