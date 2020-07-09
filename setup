@@ -24,23 +24,23 @@ done < $DEPENDENCY_LIST
 mkdir -p arch-root aur-package local-repo
 CHROOT=arch-root
 ##Check create repo or not yet
-echo -e "${MAGENTA}Create cumtom repo${NC}"
+echo -e "${MAGENTA} Create cumtom repo...${NC}"
 read -p "+ Repo name: " REPONAME
 FINDREPO=$(find local-repo/$REPONAME.db | awk -F"." '{printf $1}')
 if [[ "local-repo/$REPONAME" == "$FINDREPO" ]] ;then
-    echo -e "${YELLOW}==>>${NC}Repo already exists."
+    echo -e "${YELLOW}==>>${NC} Repo already exists."
 else
     repo-add local-repo/"$REPONAME".db.tar.xz #Create repo db
     if [[ -f local-repo/$REPONAME.db ]] ; then
-        echo -e "${YELLOW}==>>${NC}Created success."
+        echo -e "${YELLOW}==>>${NC} Created success."
     else
-        echo -e "${YELLOW}==>>${NC}Created Fail."
+        echo -e "${YELLOW}==>>${NC} Created Fail."
     fi
 fi
 
 ##create fakeroot for build aur package
 echo 
-echo -e "${YELLOW}Create fakeroot.${NC}"
+echo -e "${MAGENTA}Create fakeroot...${NC}"
 function checkpassword(){
 sudo -k
 read -s -p "+ Password: " PASSWORD
