@@ -24,13 +24,13 @@ AUR_PACKAGE=$(pwd)/aur-package/
 
 PACKAGE_UPDATE=$(pwd)/package-update
 PACKAGE_BUILD_FAIL=$(pwd)/package-build-fail
-PACKAGE_BUILD_ALREADY=$(pwd)/package-build-already
+PACKAGE_BUILD_SUCCESS=$(pwd)/package-build-scuess
 PACKAGE_CHECKING=$(pwd)/package-checking
 PACKAGE_BUILD_NEW=$(pwd)/package-build-new
 
 rm -rf $PACKAGE_UPDATE 
 rm -rf $PACKAGE_BUILD_FAIL 
-rm -rf $PACKAGE_BUILD_ALREADY
+rm -rf $PACKAGE_BUILD_SUCCESS
 rm -rf $PACKAGE_CHECKING
 rm -rf $PACKAGE_BUILD_NEW
 
@@ -40,8 +40,8 @@ touch $PACKAGE_BUILD_SUCCESS
 touch $PACKAGE_CHECKING
 touch $PACKAGE_BUILD_NEW
 
-
-echo -e "${YELLOW}==>>${NC} Cloning..."
+echo
+echo -e "${YELLOW} Cloning...${NC}"
 echo
 #get name all aur package run this command: $ aur pkglist > package-list
 #clone all aur repo
@@ -51,6 +51,7 @@ while read line; do
 done < $PACKAGE_LIST
 
 #start build aur package
+echo
 echo -e "${YELLOW}Starting build...${NC}"
 echo
 for package in ${PACKAGES}; do 
@@ -58,11 +59,11 @@ for package in ${PACKAGES}; do
 
     #check git update in aur package
     namepkg=$(echo $package | awk -F"/" '{printf $7}')
-    echo -e "${YELLOW}==>>${NC} Checking git pull on ${MAGENTA}${namepkg}${NC}"
+    echo -e "${YELLOW}==>>${NC} Checking git pull on: ${MAGENTA}${namepkg}${NC}"
     PULL=$(git pull --ff-only)
     ALREADY="Already up to date."
     if [[ "$PULL" == "$ALREADY" ]] ;then
-      echo -e "$YELLOW==>$NC Package: ${MAGENTA}${namepkg}${NC} is ${BULE}${ALREADY}${NC}"
+      echo -e "$YELLOW==>>$NC Package: ${MAGENTA}${namepkg}${NC} is ${BULE}${ALREADY}${NC}"
       PKGFIND=$(find *.pkg.tar.xz)
       PKGS=$(echo $PKGFIND | awk -F" " '{print $1}')
 
@@ -70,7 +71,7 @@ for package in ${PACKAGES}; do
       if [[ -f $PKGS ]];then
         echo -e "${YELLOW}==>${NC} Package: ${MAGENTA}${PKGS}${NC} was build already."
         #add package that success build
-        echo "$PKGS" >> $PACKAGE_BUILD_ALREADY
+        echo "$PKGS" >> $PACKAGE_BUILD_SUCCESS
         echo
       else 
         echo -e "${YELLOW}==>>${NC} Start build ${MAGENTA}${namepkg}${NC} first time."
@@ -86,13 +87,13 @@ for package in ${PACKAGES}; do
           echo "Syncing to database archpkg..."
           repo-add $(pwd)/local-repo/${REPO_NAME}.db.tar.xz ./*.pkg.tar.xz
         else 
-          echo "${RED} Package: $PKGS build fail. ${NC}"
+          echo -e "${RED} Package: $PKGS build fail. ${NC}"
           echo "$PKGS" >> $PACKAGE_BUILD_FAIL
           updpkgsums 
         fi
       fi
     else
-      echo "Git updated, Start build again."
+      echo -e "${YELLOW}==>>${NC} Git updated, Start build again."
       ls *.pkg.tar.xz > $PACKAGE_CHECKING
       sudo -S makechrootpkg -cur "$CHROOT"
       PKGOLD=$(cat $PACKAGE_CHECKING)
@@ -116,7 +117,7 @@ for package in ${PACKAGES}; do
 done
 
 
-COUNT1=$(wc -l $PACKAGE_BUILD_ALREADY | awk -F" " '{printf $1}')
+COUNT1=$(wc -l $PACKAGE_BUILD_SUCCESS | awk -F" " '{printf $1}')
 COUNT2=$(wc -l $PACKAGE_UPDATE | awk -F" " '{printf $1}')
 COUNT3=$(wc -l $PACKAGE_BUILD_FAIL | awk -F" " '{printf $1}')
 COUNT4=$(wc -l $PACKAGE_BUILD_NEW | awk -F" " '{printf $1}')
