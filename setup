@@ -40,7 +40,7 @@ fi
 
 ##create fakeroot for build aur package
 echo 
-echo -e "${MAGENTA}Create fakeroot...${NC}"
+echo -e "${MAGENTA} Create fakeroot...${NC}"
 function checkpassword(){
 sudo -k
 read -s -p "+ Password: " PASSWORD

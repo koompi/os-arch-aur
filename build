@@ -47,22 +47,22 @@ echo
 #clone all aur repo
 while read line; do
     cd $AUR_PACKAGE && git clone https://aur.archlinux.org/"$line".git
-    echo "clone $line successfull"
+    echo -e "${YELLOW}==>>${NC} clone $line successfull"
 done < $PACKAGE_LIST
 
 #start build aur package
-echo -e "${YELLOW}==>>${NC} Starting build..."
+echo -e "${YELLOW}Starting build...${NC}"
 echo
 for package in ${PACKAGES}; do 
     cd "$package" || (echo "No such directory: $package"; exit 1)
 
     #check git update in aur package
     namepkg=$(echo $package | awk -F"/" '{printf $7}')
-    echo -e "Checking git pull on ${MAGENTA}${namepkg}${NC}"
+    echo -e "${YELLOW}==>>${NC} Checking git pull on ${MAGENTA}${namepkg}${NC}"
     PULL=$(git pull --ff-only)
     ALREADY="Already up to date."
     if [[ "$PULL" == "$ALREADY" ]] ;then
-      echo -e "$YELLOW==>$NC Package: ${MAGENTA}${namepkg}${NC} is ${BULE}Up-to-date${NC}"
+      echo -e "$YELLOW==>$NC Package: ${MAGENTA}${namepkg}${NC} is ${BULE}${ALREADY}${NC}"
       PKGFIND=$(find *.pkg.tar.xz)
       PKGS=$(echo $PKGFIND | awk -F" " '{print $1}')
 
@@ -73,7 +73,7 @@ for package in ${PACKAGES}; do
         echo "$PKGS" >> $PACKAGE_BUILD_ALREADY
         echo
       else 
-        echo -e "${RED}Start build $namepkg first time.${NC}"
+        echo -e "${YELLOW}==>>${NC} Start build ${MAGENTA}${namepkg}${NC} first time."
         sudo -S makechrootpkg -cur "$CHROOT"
 
         PKGFIND=$(find ./*.pkg.tar.xz)
