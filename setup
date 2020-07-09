@@ -42,6 +42,7 @@ fi
 echo 
 echo "Create fakeroot."
 function checkpassword(){
+sudo -k
 read -s -p "Password: " PASSWORD
 echo
 if sudo -lS &> /dev/null << EOF
