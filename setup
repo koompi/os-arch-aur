@@ -56,8 +56,10 @@ echo
     iproute2 iputils less licenses linux logrotate man-db man-pages mdadm \
     pacman pciutils perl procps-ng psmisc s-nail sed shadow sysfsutils \
     systemd-sysvcompat tar texinfo usbutils util-linux which base-devel
+echo
+echo -e "${YELLOW} Please run ./build for build AUR package.${NC}"
 else
-  echo -e "${RED}Incorrect Password. Please try again.${NC}"
+  echo -e "${RED} Incorrect Password. Please try again.${NC}"
   checkpassword
 fi
 }
