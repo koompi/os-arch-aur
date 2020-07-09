@@ -41,7 +41,13 @@ fi
 ##create fakeroot for build aur package
 echo 
 echo "Create fakeroot."
+function checkpassword(){
 read -s -p "Password: " PASSWORD
+echo
+if sudo -lS &> /dev/null << EOF
+$PASSWORD
+EOF
+then
 echo
 [[ -d "$CHROOT/root" ]] || echo "$PASSWORD" | mkarchroot -C /etc/pacman.conf "$CHROOT/root" \
     bash bzip2 coreutils cryptsetup device-mapper dhcpcd diffutils e2fsprogs \
@@ -49,3 +55,8 @@ echo
     iproute2 iputils less licenses linux logrotate man-db man-pages mdadm \
     pacman pciutils perl procps-ng psmisc s-nail sed shadow sysfsutils \
     systemd-sysvcompat tar texinfo usbutils util-linux which base-devel
+else
+  echo "Incorrect Password. Please try again."
+  checkpassword
+}
+checkpassword
