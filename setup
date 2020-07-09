@@ -11,7 +11,7 @@ NC='\033[0m'
 DEPENDENCY_LIST=$(pwd)/dependency
 
 #check dependency for build aur package in dependency
-echo -e "${YELLOW}Installing dependencies...${NC}"
+echo -e "${MAGENTA}Installing dependencies...${NC}"
 while read line; do
   if pacman -Qs $line > /dev/null ; then
     echo "The package $line is installed"
@@ -24,23 +24,23 @@ done < $DEPENDENCY_LIST
 mkdir -p arch-root aur-package local-repo
 CHROOT=arch-root
 ##Check create repo or not yet
-echo "${MAGENTA}Create cumtom repo${NC}"
+echo -e "${MAGENTA}Create cumtom repo${NC}"
 read -p "+ Repo name: " REPONAME
 FINDREPO=$(find local-repo/$REPONAME.db | awk -F"." '{printf $1}')
 if [[ "local-repo/$REPONAME" == "$FINDREPO" ]] ;then
-    echo "${YELLOW}==>>${NC}Repo already exists."
+    echo -e "${YELLOW}==>>${NC}Repo already exists."
 else
     repo-add local-repo/"$REPONAME".db.tar.xz #Create repo db
     if [[ -f local-repo/$REPONAME.db ]] ; then
-        echo "${YELLOW}==>>${NC}Created success."
+        echo -e "${YELLOW}==>>${NC}Created success."
     else
-        echo "${YELLOW}==>>${NC}Created Fail."
+        echo -e "${YELLOW}==>>${NC}Created Fail."
     fi
 fi
 
 ##create fakeroot for build aur package
 echo 
-echo "${YELLOW}Create fakeroot.${NC}"
+echo -e "${YELLOW}Create fakeroot.${NC}"
 function checkpassword(){
 sudo -k
 read -s -p "+ Password: " PASSWORD
@@ -57,7 +57,7 @@ echo
     pacman pciutils perl procps-ng psmisc s-nail sed shadow sysfsutils \
     systemd-sysvcompat tar texinfo usbutils util-linux which base-devel
 else
-  echo "${RED}Incorrect Password. Please try again.${NC}"
+  echo -e "${RED}Incorrect Password. Please try again.${NC}"
   checkpassword
 fi
 }
