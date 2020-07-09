@@ -87,8 +87,8 @@ for package in ${PACKAGES}; do
           echo "Syncing to database archpkg..."
           repo-add $(pwd)/local-repo/${REPO_NAME}.db.tar.xz ./*.pkg.tar.xz
         else 
-          echo -e "${RED} Package: $PKGS build fail. ${NC}"
-          echo "$PKGS" >> $PACKAGE_BUILD_FAIL
+          echo -e "${YELLOW}==>>${NC}${RED} Package: $PKGS build fail. ${NC}"
+          echo "$namepkg" >> $PACKAGE_BUILD_FAIL
           updpkgsums 
         fi
       fi
