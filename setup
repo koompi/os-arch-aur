@@ -58,5 +58,6 @@ echo
 else
   echo "Incorrect Password. Please try again."
   checkpassword
+fi
 }
 checkpassword
