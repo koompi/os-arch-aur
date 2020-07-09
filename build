@@ -5,7 +5,7 @@
 # trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
 
 clear
-sudo -S pacman -Sy
+sudo pacman -Sy
 
 #color
 RED='\033[0;31m'
@@ -41,7 +41,8 @@ touch $PACKAGE_CHECKING
 touch $PACKAGE_BUILD_NEW
 
 
-echo "Cloning..."
+echo -e "${YELLOW}==>>${NC} Cloning..."
+echo
 #get name all aur package run this command: $ aur pkglist > package-list
 #clone all aur repo
 while read line; do
@@ -50,24 +51,24 @@ while read line; do
 done < $PACKAGE_LIST
 
 #start build aur package
-echo -e "${YELLOW}Starting build...${NC}"
+echo -e "${YELLOW}==>>${NC} Starting build..."
 echo
-for package in $PACKAGES; do 
+for package in ${PACKAGES}; do 
     cd "$package" || (echo "No such directory: $package"; exit 1)
 
     #check git update in aur package
     namepkg=$(echo $package | awk -F"/" '{printf $7}')
-    echo -e "Checking git pull on$MAGENTA $namepkg$NC"
+    echo -e "Checking git pull on ${MAGENTA}${namepkg}${NC}"
     PULL=$(git pull --ff-only)
     ALREADY="Already up to date."
     if [[ "$PULL" == "$ALREADY" ]] ;then
-      echo -e "$YELLOW==>$NC Package: $MAGENTA$namepkg$NC is ${BULE}Up-to-date${NC}"
+      echo -e "$YELLOW==>$NC Package: ${MAGENTA}${namepkg}${NC} is ${BULE}Up-to-date${NC}"
       PKGFIND=$(find *.pkg.tar.xz)
       PKGS=$(echo $PKGFIND | awk -F" " '{print $1}')
 
       #check aur package was build already
       if [[ -f $PKGS ]];then
-        echo -e "$YELLOW==>$NC Package: ${MAGENTA}$PKGS${NC} was build already."
+        echo -e "${YELLOW}==>${NC} Package: ${MAGENTA}${PKGS}${NC} was build already."
         #add package that success build
         echo "$PKGS" >> $PACKAGE_BUILD_ALREADY
         echo
@@ -83,9 +84,10 @@ for package in $PACKAGES; do
           #add package that success build
           echo "$PKGS" >> $PACKAGE_BUILD_NEW
           echo "Syncing to database archpkg..."
-          repo-add $(pwd)/local-repo/$REPO_NAME.db.tar.xz ./*.pkg.tar.xz
+          repo-add $(pwd)/local-repo/${REPO_NAME}.db.tar.xz ./*.pkg.tar.xz
         else 
-          echo "Build fail."
+          echo "${RED} Package: $PKGS build fail. ${NC}"
+          echo "$PKGS" >> $PACKAGE_BUILD_FAIL
           updpkgsums 
         fi
       fi
@@ -96,7 +98,7 @@ for package in $PACKAGES; do
       PKGOLD=$(cat $PACKAGE_CHECKING)
       PKGNEW=$(find *.pkg.tar.xz)
       if [[ -z $PKGNEW ]] ;then
-        echo -e "$RED Aur package build failed.$NC"
+        echo -e "${RED} Aur package build failed.${NC}"
         echo "$PKGOLD" >> $PACKAGE_BUILD_FAIL
       else
         #check aur package build success or not
@@ -121,13 +123,13 @@ COUNT4=$(wc -l $PACKAGE_BUILD_NEW | awk -F" " '{printf $1}')
 
 
 echo
-echo -e "Package $BULE$COUNT1$NC was build already."
-echo -e "package $BULE$COUNT4$NC build new."
-echo -e "Package $BULE$COUNT2$NC was updated."
+echo -e "Package ${BULE}${COUNT1}${NC} was build already."
+echo -e "package ${BULE}${COUNT4}${NC} build new."
+echo -e "Package ${BULE}${COUNT2}${NC} was updated."
 if [[ $COUNT3 == 0 ]] ;then
-  echo -e "package $BULE$COUNT3$NC was failed."
+  echo -e "package ${BULE}${COUNT3}${NC} was failed."
 else
-  echo -e "package $RED$COUNT3$NC was failed."
+  echo -e "package ${RED}${COUNT3}${NC} was failed."
 fi
 echo
 
