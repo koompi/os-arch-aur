@@ -50,6 +50,7 @@ LOCAL_PATH=$(pwd)/arch-repo
 CHROOT=$(pwd)/arch-root
 REPO_NAME=koompi
 LOCAL_REPO=$(pwd)/local-repo
+LOCAL_REPO_SYNC=$(pwd)/local-repo/*
 PACKAGES=$(pwd)/aur-package/*
 PACKAGE_LIST=$(pwd)/package-list
 
@@ -314,17 +315,14 @@ GETPATHREPO=$(echo "${PATHREPO}" | awk -F'=' '{print $2}')
 CUTSPACEPATH=`echo ${GETPATHREPO} | sed 's/ *$//g'`
 
 function rsync_to_repo(){
-  GETIP=$1
-  GETUSER=$2
-  GETPATH=$3
-  GETPACKAGE=$4
-  GETCURRENTDIR=$5
+  GETIP="$1"
+  GETUSER="$2"
+  GETPATH="$3"
   
-  #echo "rsync -av ${GETPACKAGE}/*.pkg.tar.* ${GETUSER}@${GETIP}:${GETPATH}"
-  rsync -av ${GETPACKAGE}/*.pkg.tar.* ${GETUSER}@${GETIP}:${GETPATH}
-
-  #echo "rsync -av ${GETCURRENTDIR}/ ${GETUSER}@${GETIP}:${GETPATH}"
-  rsync -av ${GETCURRENTDIR}/local-repo/ ${GETUSER}@${GETIP}:${GETPATH}
+  echo "rsyncing aur package"
+  rsync -av ${PACKAGES}/*.pkg.tar.* ${GETUSER}@${GETIP}:${GETPATH}
+  echo "rsyncing repo db"
+  rsync -av ${LOCAL_REPO_SYNC} ${GETUSER}@${GETIP}:${GETPATH}
 }
 
 
@@ -338,5 +336,5 @@ function rsync_to_repo(){
 ###CALL FUNCTION
 clone_aur_repo
 aur_main
-# rsync_to_repo ${CUTSPACEIP} ${CUTSPACEUSER} ${CUTSPACEPATH} ${PACKAGES} ${LOCAL_REPO}
 show_count_package_build
+rsync_to_repo ${CUTSPACEIP} ${CUTSPACEUSER} ${CUTSPACEPATH}
