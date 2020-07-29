@@ -1,4 +1,4 @@
-# HOW TO SETUP AUTO BUILD AR PACKAGE 
+# HOW TO SETUP AUTO BUILD AUR PACKAGE 
 
 ### Setup environment for build AUR package
 
