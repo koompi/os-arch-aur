@@ -1,141 +1,342 @@
 #!/bin/bash
 
+## Author: Heng Hongsea
+## This is script for build AUR pkgs
+
+## CHECK NOTE
+#get name all aur package run this command: 
+# $ aur pkglist > package-list
+#clone all aur repo
+
 #check code error
 # set -uo pipefail
 # trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+# set -x
 
 clear
-sudo pacman -Sy
 
-#color
+## color code
 RED='\033[0;31m'
 YELLOW='\033[0;93m'
-BULE='\033[0;94m'
-MAGENTA='\033[0;35m'
+BULE='\033[1;94m'
+GREEN='\033[1;32m'
+BULELIGHT='\033[0;36m'
+MAGENTA='\033[1;35m'
+WRITE='\033[1;37m'
 NC='\033[0m'
 
+## banner
+ echo -e " ${MAGENTA}"
+ echo    "           _  _____   ___  __  __ ____ ___  "
+ echo    "          | |/ / _ \ / _ \|  \/  |  _ \_ _| "
+ echo    "          | ' / | | | | | | |\/| | |_) | |  "
+ echo    "          | . \ |_| | |_| | |  | |  __/| |  "
+ echo    "          |_|\_\___/ \___/|_|  |_|_|  |___| "                                 
+ echo
+ echo -e ${WRITE}
+ echo "By      : Heng Hongsea"
+ echo "Check by: Phal Brilliant "
+ echo "Github  : KOOMPI"
+ echo "Create  : 02-07-2020"
+ echo "Update  : 28.07-2020"
+ echo "Status  : Active" 
+ echo -e ${NC}
+
+## update system
+sudo pacman -Sy
+
+## variable
 LOCAL_PATH=$(pwd)/arch-repo
 CHROOT=$(pwd)/arch-root
 REPO_NAME=koompi
+LOCAL_REPO=$(pwd)/local-repo
 PACKAGES=$(pwd)/aur-package/*
 PACKAGE_LIST=$(pwd)/package-list
 
 AUR_PACKAGE=$(pwd)/aur-package/
 
-PACKAGE_UPDATE=$(pwd)/package-update
-PACKAGE_BUILD_FAIL=$(pwd)/package-build-fail
-PACKAGE_BUILD_SUCCESS=$(pwd)/package-build-scuess
+PACKAGE_BUI_UPDATE_SCUESS=$(pwd)/package-bui-update-scuess
+PACKAGE_BUI_UPDATE_FAILD=$(pwd)/package-bui-update-faild
+PACKAGE_BUI_NEW_SUCCESS=$(pwd)/package-bui-new-scuess
+PACKAGE_BUI_NEW_FAILD=$(pwd)/package-bui-new-faild
+PACKAGE_BUI_ALREADY=$(pwd)/package-bui-already
 PACKAGE_CHECKING=$(pwd)/package-checking
-PACKAGE_BUILD_NEW=$(pwd)/package-build-new
 
-rm -rf $PACKAGE_UPDATE 
-rm -rf $PACKAGE_BUILD_FAIL 
-rm -rf $PACKAGE_BUILD_SUCCESS
-rm -rf $PACKAGE_CHECKING
-rm -rf $PACKAGE_BUILD_NEW
+PATHSERVER=$(pwd)/.server
 
-touch $PACKAGE_UPDATE
-touch $PACKAGE_BUILD_FAIL
-touch $PACKAGE_BUILD_SUCCESS
+rm -rf ${PACKAGE_BUI_UPDATE_SCUESS}
+rm -rf ${PACKAGE_BUI_UPDATE_FAILD}
+rm -rf ${PACKAGE_BUI_NEW_SUCCESS}
+rm -rf ${PACKAGE_BUI_NEW_FAILD}
+rm -rf ${PACKAGE_BUI_ALREADY}
+rm -rf ${PACKAGE_CHECKING}
+
+touch ${PACKAGE_BUI_UPDATE_SCUESS}
+touch ${PACKAGE_BUI_UPDATE_FAILD}
+touch ${PACKAGE_BUI_NEW_SUCCESS}
+touch ${PACKAGE_BUI_NEW_FAILD}
+touch ${PACKAGE_BUI_ALREADY}
 touch $PACKAGE_CHECKING
-touch $PACKAGE_BUILD_NEW
 
-echo
-echo -e "${YELLOW} Cloning...${NC}"
-echo
-#get name all aur package run this command: $ aur pkglist > package-list
-#clone all aur repo
-while read line; do
-    cd $AUR_PACKAGE && git clone https://aur.archlinux.org/"$line".git
-    echo -e "${YELLOW}==>>${NC} clone $line successfull"
-done < $PACKAGE_LIST
+##array used for returningvalues from functions:
+declare -a RET_GIT
+RET_GIT[0]="A"
+RET_GIT[1]="B"
+RET_GIT[2]="C"
 
-#start build aur package
+function clone_aur_repo(){
+  echo
+  echo -e "${WRITE}[${YELLOW}Cloning AUR Package...$WRITE]"${NC}
+  echo -e ${WRITE}"------------------------"
+  echo 
+
+  while read line; do
+      cd ${AUR_PACKAGE}
+      if [[ -d $line ]]; then
+        echo -e "${YELLOW}[*]${NC} Cloning $line"${BULELIGHT}
+        echo -e "    + $line clone already."
+        echo -e ${NC}
+      else
+        echo -e ${YELLOW}"[ ]${NC} Cloning $line" ${BULELIGHT}
+        git clone https://aur.archlinux.org/"$line".git
+        echo -e $NC
+      fi
+  done < $PACKAGE_LIST
+}
+
+function aur_sync_db(){
+PKGS=$1
+repo-add ${LOCAL_REPO}/${REPO_NAME}.db.tar.xz ${PKGS}
 echo
-echo -e "${YELLOW}Starting build...${NC}"
+}
+
+function aur_build_new_fail(){
+PKGOLD=$1  
+echo -e "${BULE}    -> ${RED}AUR new build failed.${NC}"
+echo "$PKGOLD , ${PACKAGE_BUI_NEW_FAILD}"
+echo "$PKGOLD" >> ${PACKAGE_BUI_NEW_FAILD}
+}
+
+function aur_build_new_success(){
+PKGNEW=$1  
+echo -e "${BULE}    -> ${GREEN}AUR new build sucess.${NC}"
+echo -e "${BULE}    -> ${GREEN}Syncing to database archpkg...${NC}"
+aur_sync_db ${PKGNEW}
+echo "$PKGNEW" >> ${PACKAGE_BUI_NEW_SUCCESS}
+}
+
+function aur_build_update_fail(){
+PKGOLD=$1  
+echo -e "${BULE}    -> ${RED}AUR update build failed.${NC}"
+echo "$PKGOLD , ${PACKAGE_BUI_UPDATE_FAILD}"
+echo "$PKGOLD" >> ${PACKAGE_BUI_UPDATE_FAILD}
+}
+
+function aur_build_update_success(){
+PKGNEW=$1  
+echo -e "${BULE}    -> ${GREEN}AUR update sucess.${NC}"
+echo -e "${BULE}    -> ${GREEN}Syncing to database archpkg...${NC}"
+aur_sync_db ${PKGNEW}
+echo "$PKGNEW" >> ${PACKAGE_BUI_UPDATE_SCUESS}
+}
+
+function aur_build_already(){
+  PKGS=$1
+  echo -e "${BULE}    ->${GREEN} Package: ${PKGS} was build already.${NC}"
+  echo "$PKGS" >> ${PACKAGE_BUI_ALREADY}
+  echo
+}
+
+function aur_build_update(){
+      namepkg=$1
+      echo -e "${BULE}    -> ${GREEN}Git updated, building AUR package update.${NC}"
+      rm -rf ./*.pkg.tar.*
+      sudo -S makechrootpkg -cur "$CHROOT"
+
+      PKGNEW=$(find *.pkg.tar.*)
+
+      if [[ -z $PKGNEW ]] ;then
+        aur_build_update_fail ${namepkg}
+      else
+        aur_build_update_success ${PKGNEW}
+      fi
+}
+
+function aur_build_new(){
+  namepkg=$1
+  echo -e "${BULE}    -> ${GREEN}Building ${namepkg} new AUR package...${NC}"
+  sudo -S makechrootpkg -cur "$CHROOT"
+
+  PKGFIND=$(find ./*.pkg.tar.*)
+  PKGS=$(echo $PKGFIND | awk -F" " '{print $1}')
+
+  if [[ -f $PKGS ]];then
+    aur_build_new_success ${PKGS}
+  else 
+    aur_build_new_fail ${namepkg}
+    # updpkgsums 
+  fi
+}
+
+function check_git_pull(){
+  package=$1
+  namepkg=$(echo $package | awk -F"/" '{printf $7}')
+  echo -e " ${BULE}+ ${GREEN}(Checking git update): ${namepkg}${NC}"
+
+  PULL="$(git pull --ff-only)"
+  ALREADY="Already up to date."
+
+  local pull_dex="$2"
+  local already_dex="$3"
+  local namepkg_dex="$4"
+
+  local pull_var="${PULL}"
+  local already_var="${ALREADY}"
+  local namepkg_var="${namepkg}"
+
+  RET_GIT[ $pull_dex ]=$pull_var
+  RET_GIT[ $already_dex ]=$already_var
+  RET_GIT[ $namepkg_dex ]=$namepkg_var
+}
+
+function aur_main(){
 echo
+echo -e "${WRITE}[${YELLOW}Starting build...$WRITE]"${NC}
+echo -e ${WRITE}"-------------------"
+echo
+
 for package in ${PACKAGES}; do 
     cd "$package" || (echo "No such directory: $package"; exit 1)
 
-    #check git update in aur package
-    namepkg=$(echo $package | awk -F"/" '{printf $7}')
-    echo -e "${YELLOW}==>>${NC} Checking git pull on: ${MAGENTA}${namepkg}${NC}"
-    PULL=$(git pull --ff-only)
-    ALREADY="Already up to date."
-    if [[ "$PULL" == "$ALREADY" ]] ;then
-      echo -e "$YELLOW==>>$NC Package: ${MAGENTA}${namepkg}${NC} is ${BULE}${ALREADY}${NC}"
-      PKGFIND=$(find *.pkg.tar.xz)
+    check_git_pull $package 1 2 3
+
+    PULL=${RET_GIT[1]}
+    ALREADY=${RET_GIT[2]}
+    namepkg=${RET_GIT[3]}
+
+    if [[ "$PULL" == "$ALREADY" ]]; then
+      echo -e "    ${BULE}-> ${GREEN}Package: ${namepkg} ${ALREADY}"
+      
+      PKGFIND=$(find *.pkg.tar.*)
       PKGS=$(echo $PKGFIND | awk -F" " '{print $1}')
 
-      #check aur package was build already
-      if [[ -f $PKGS ]];then
-        echo -e "${YELLOW}==>${NC} Package: ${MAGENTA}${PKGS}${NC} was build already."
-        #add package that success build
-        echo "$PKGS" >> $PACKAGE_BUILD_SUCCESS
-        echo
+      if [[ -f $PKGS ]]; then
+        aur_build_already ${PKGS}
       else 
-        echo -e "${YELLOW}==>>${NC} Start build ${MAGENTA}${namepkg}${NC} first time."
-        sudo -S makechrootpkg -cur "$CHROOT"
-
-        PKGFIND=$(find ./*.pkg.tar.xz)
-        PKGS=$(echo $PKGFIND | awk -F" " '{print $1}')
-
-        #check if aur package build success
-        if [[ -f $PKGS ]];then
-          #add package that success build
-          echo "$PKGS" >> $PACKAGE_BUILD_NEW
-          echo "Syncing to database archpkg..."
-          repo-add $(pwd)/local-repo/${REPO_NAME}.db.tar.xz ./*.pkg.tar.xz
-        else 
-          echo -e "${YELLOW}==>>${NC}${RED} Package: $namepkg build fail. ${NC}"
-          echo "$namepkg" >> $PACKAGE_BUILD_FAIL
-          updpkgsums 
-        fi
+        aur_build_new ${namepkg}
       fi
     else
-      echo -e "${YELLOW}==>>${NC} Git updated, Start build again."
-      ls *.pkg.tar.xz > $PACKAGE_CHECKING
-      sudo -S makechrootpkg -cur "$CHROOT"
-      PKGOLD=$(cat $PACKAGE_CHECKING)
-      PKGNEW=$(find *.pkg.tar.xz)
-      if [[ -z $PKGNEW ]] ;then
-        echo -e "${RED} Aur package build failed.${NC}"
-        echo "$PKGOLD" >> $PACKAGE_BUILD_FAIL
-      else
-        #check aur package build success or not
-        if [[ "$PKGOLD" != "$PKGNEW" ]] ;then
-          echo "$BULE Aur package build sucess.$NC"
-          echo "$PKGNEW" >> $PACKAGE_UPDATE
-        else
-          echo -e "$RED Aur package build failed.$NC"
-          echo "$PKGOLD" >> $PACKAGE_BUILD_FAIL
-        fi
-
-      fi
-
+      aur_build_update ${namepkg}
     fi
+
 done
+}
 
+declare -a RET_COU
+RET_COU[0]="A"
+RET_COU[1]="B"
+RET_COU[2]="C"
+RET_COU[3]="D"
+RET_COU[4]="E"
 
-COUNT1=$(wc -l $PACKAGE_BUILD_SUCCESS | awk -F" " '{printf $1}')
-COUNT2=$(wc -l $PACKAGE_UPDATE | awk -F" " '{printf $1}')
-COUNT3=$(wc -l $PACKAGE_BUILD_FAIL | awk -F" " '{printf $1}')
-COUNT4=$(wc -l $PACKAGE_BUILD_NEW | awk -F" " '{printf $1}')
+function count_package_build(){
+BUI_NEW_SUCCESS=${1}
+BUI_NEW_FAILD=${2}
+BUI_UPDATE_SCUESS=${3}
+BUI_UPDATE_FAILD=${4}
+BUI_ALREADY=${5}
 
+local index_1=${6}
+local index_2=${7}
+local index_3=${8}
+local index_4=${9}
+local index_5=${10}
 
+local COUNT_PKG_BUI_NEW_SUCC=$(wc -l ${BUI_NEW_SUCCESS} | awk -F" " '{printf $1}')
+local COUNT_PKG_BUI_NEW_FAI=$(wc -l ${BUI_NEW_FAILD} | awk -F" " '{printf $1}')
+local COUNT_PKG_BUI_UP_SUCC=$(wc -l ${BUI_UPDATE_SCUESS} | awk -F" " '{printf $1}')
+local COUNT_PKG_BUI_UP_FAI=$(wc -l ${BUI_UPDATE_FAILD} | awk -F" " '{printf $1}')
+local COUNT_PKG_BUI_ALR=$(wc -l ${BUI_ALREADY} | awk -F" " '{printf $1}')
+
+RET_COU[ $index_1 ]=${COUNT_PKG_BUI_NEW_SUCC}
+RET_COU[ $index_2 ]=${COUNT_PKG_BUI_NEW_FAI}
+RET_COU[ $index_3 ]=${COUNT_PKG_BUI_UP_SUCC}
+RET_COU[ $index_4 ]=${COUNT_PKG_BUI_UP_FAI}
+RET_COU[ $index_5 ]=${COUNT_PKG_BUI_ALR}
+
+}
+
+function show_count_package_build(){
+count_package_build ${PACKAGE_BUI_NEW_SUCCESS} ${PACKAGE_BUI_NEW_FAILD} ${PACKAGE_BUI_UPDATE_SCUESS} ${PACKAGE_BUI_UPDATE_FAILD} ${PACKAGE_BUI_ALREADY} 1 2 3 4 5
+get1=
+get2=
 echo
-echo -e "Package ${BULE}${COUNT1}${NC} was build already."
-echo -e "package ${BULE}${COUNT4}${NC} build new."
-echo -e "Package ${BULE}${COUNT2}${NC} was updated."
-if [[ $COUNT3 == 0 ]] ;then
-  echo -e "package ${BULE}${COUNT3}${NC} was failed."
-else
-  echo -e "package ${RED}${COUNT3}${NC} was failed."
-fi
+echo -e ${GREEN}"[/\] AUR build new package"${NC}
+echo -e "     -> package: ${RET_COU[1]} build scuess."
+echo -e "     -> package: ${RET_COU[2]} build faild."
+echo -e ${GREEN}"[/\] AUR build update package"${NC}
+echo -e "     -> package: ${RET_COU[3]} build scuess."
+echo -e "     -> package: ${RET_COU[4]} build faild."
+echo -e ${GREEN}"[/\] AUR build already"${NC}
+echo -e "     -> package: ${RET_COU[5]} build already."
 echo
+}
 
-##sync aur package after build to server
-#rsync -av $PACKAGES/*.pkg.tar.xz username@[IP Address]:[location directory]
+##rsync repo
+end_of_file=0
+while [[ $end_of_file == 0 ]]; do
+IFS= read -r line
+end_of_file=$?
+  if [[ "$line" == *"IPSERVER"* ]]; then
+    IPSERVER=$line
+  fi
+  if [[ "$line" == *"USERNAME"* ]]; then 
+    USERNAME=$line
+  fi
+  if [[ "$line" == *"PASSWORD"* ]]; then
+    PASSWORD=$line
+  fi
+  if [[ "$line" == *"PATHREPO"* ]]; then
+    PATHREPO=$line
+  fi
+done < ${PATHSERVER}
 
-##sync db after add aur package to server
-#rsync -av $(pwd)/local-repo/ username@[IP Address]:[localtion directory]
+GETIPSERVER=$(echo "${IPSERVER}" | awk -F'=' '{print $2}')
+CUTSPACEIP=`echo ${GETIPSERVER} | sed 's/ *$//g'`
+
+GETUSER=$(echo "${USERNAME}" | awk -F'=' '{print $2}')
+CUTSPACEUSER=`echo ${GETUSER} | sed 's/ *$//g'`
+
+GETPASSWD=$(echo "${PASSWORD}" | awk -F'=' '{print $2}')
+CUTSPACEPASSWD=`echo ${GETPASSWD} | sed 's/ *$//g'`
+
+GETPATHREPO=$(echo "${PATHREPO}" | awk -F'=' '{print $2}')
+CUTSPACEPATH=`echo ${GETPATHREPO} | sed 's/ *$//g'`
+
+function rsync_to_repo(){
+  GETIP=$1
+  GETUSER=$2
+  GETPATH=$3
+  GETPACKAGE=$4
+  GETCURRENTDIR=$5
+  
+  #echo "rsync -av ${GETPACKAGE}/*.pkg.tar.* ${GETUSER}@${GETIP}:${GETPATH}"
+  rsync -av ${GETPACKAGE}/*.pkg.tar.* ${GETUSER}@${GETIP}:${GETPATH}
+
+  #echo "rsync -av ${GETCURRENTDIR}/ ${GETUSER}@${GETIP}:${GETPATH}"
+  rsync -av ${GETCURRENTDIR}/local-repo/ ${GETUSER}@${GETIP}:${GETPATH}
+}
+
+
+# ##sync aur package after build to server
+# #rsync -av $PACKAGES/*.pkg.tar.* username@[IP Address]:[location directory]
+
+# ##sync db after add aur package to server
+# #rsync -av $(pwd)/local-repo/ username@[IP Address]:[localtion directory]
+# }
+
+###CALL FUNCTION
+clone_aur_repo
+aur_main
+# rsync_to_repo ${CUTSPACEIP} ${CUTSPACEUSER} ${CUTSPACEPATH} ${PACKAGES} ${LOCAL_REPO}
+show_count_package_build

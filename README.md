@@ -1,4 +1,4 @@
-# HOW TO SETUP ARCHLINUX AUR BUILD 
+# HOW TO SETUP AUTO BUILD AR PACKAGE 
 
 ### Setup environment for build AUR package
 
@@ -9,7 +9,17 @@ $ git clone https://github.com/koompi/os-arch-aur.git
 $ cd os-arch-aur
 $ sudo chmod +x setup && ./setup
 ```
-`setup` *is bash script that use for setup environment for build AUR package.*
+`setup` : *is bash script that use for setup environment for build AUR package.*
+
+### Set up rsync server repo
+```
+cp .server-example .server
+nano .server
+```
+- IPADDRESS=SERVER
+- USERNAME=USERNAME
+- PASSWORD=PASSWORD
+- PATHREPO=PATHSERVER
 
 ### Start build AUR package
 
@@ -22,20 +32,6 @@ $ sudo chmod +x build && ./build
 ```
 
 *Note: if you want host this custom repo to server, you can set up rsync for sync all AUR package and repository database to server.*  
-
-### Setup rsync
-
-You need to edit in file `build`  for setup rsync.
-
-```
-# uncomment line 146
-rsync -av $PACKAGES/*.pkg.tar.xz username@[IP-Address]:[location-directory]
-# uncomment line 149
-rsync -av $(pwd)/local-repo/ username@[IP Address]:[localtion-directory]
-```
-
-*Note: `location-directory` is location path on server.*
-
 
 ### AURsync
 

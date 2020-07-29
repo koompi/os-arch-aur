@@ -1,0 +1,14 @@
+arch-repo
+arch-root
+aur-package
+local-repo
+package-bui-already
+package-bui-new-fail
+package-bui-new-scuess
+package-bui-update-fail
+package-bui-update-scuess
+package-checking
+package-update
+.server
+test.sh
+testfunction.sh
