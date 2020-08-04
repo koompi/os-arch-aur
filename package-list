@@ -5,7 +5,6 @@ arc-kde
 aurutils
 brave-bin
 balena-etcher
-consolas-font
 debtap
 dcadec
 drawio-desktop
@@ -16,6 +15,7 @@ epson-inkjet-printer-201601w
 epson-inkjet-printer-n10-nx127
 epson-alcx11-filter
 etcher-bin
+electronic-wechat
 freeoffice
 ffmpeg2.8
 gitkraken
@@ -41,7 +41,6 @@ simplenote-electron-bin
 telegram-desktop-bin
 ttf-ms-fonts
 ttf-mac-fonts
-tor-browser
 teamviewer
 teams
 tutanota-desktop-bin
