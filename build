@@ -52,16 +52,16 @@ REPO_NAME=koompi
 LOCAL_REPO=$(pwd)/local-repo
 LOCAL_REPO_SYNC=$(pwd)/local-repo/*
 PACKAGES=$(pwd)/aur-package/*
-PACKAGE_LIST=$(pwd)/package-list
+PACKAGE_LIST=$(pwd)/package_x86_64
 
 AUR_PACKAGE=$(pwd)/aur-package/
 
-PACKAGE_BUI_UPDATE_SCUESS=$(pwd)/package-bui-update-scuess
-PACKAGE_BUI_UPDATE_FAILD=$(pwd)/package-bui-update-faild
-PACKAGE_BUI_NEW_SUCCESS=$(pwd)/package-bui-new-scuess
-PACKAGE_BUI_NEW_FAILD=$(pwd)/package-bui-new-faild
-PACKAGE_BUI_ALREADY=$(pwd)/package-bui-already
-PACKAGE_CHECKING=$(pwd)/package-checking
+PACKAGE_BUI_UPDATE_SCUESS=$(pwd)/.package-bui-update-scuess
+PACKAGE_BUI_UPDATE_FAILD=$(pwd)/.package-bui-update-faild
+PACKAGE_BUI_NEW_SUCCESS=$(pwd)/.package-bui-new-scuess
+PACKAGE_BUI_NEW_FAILD=$(pwd)/.package-bui-new-faild
+PACKAGE_BUI_ALREADY=$(pwd)/.package-bui-already
+PACKAGE_CHECKING=$(pwd)/.package-checking
 
 PATHSERVER=$(pwd)/.server
 
@@ -181,7 +181,7 @@ function aur_build_new(){
 
 function check_git_pull(){
   package=$1
-  namepkg=$(echo $package | awk -F"/" '{printf $7}')
+  namepkg=$(echo $package | awk -F"/" '{printf $NF}')
   echo -e " ${BULE}+ ${GREEN}(Checking git update): ${namepkg}${NC}"
 
   PULL="$(git pull --ff-only)"

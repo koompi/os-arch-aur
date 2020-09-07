@@ -1,5 +1,15 @@
 # HOW TO SETUP AUTO BUILD AUR PACKAGE 
 
+### Resolve dependencies.
+
+Add the repo to `/etc/pacman.conf` for resolve dependencies.
+
+```
+[koompi]
+SigLevel = Never
+Server = https://repo.koompi.org/repo/x86_64
+```
+
 ### Setup environment for build AUR package
 
 Before build aur package, you need set up environment such as fakeroot, create the repository database for build aur package. To setup all this environment you can follow this:
