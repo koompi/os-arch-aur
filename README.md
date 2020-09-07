@@ -7,7 +7,7 @@ Add the repo to `/etc/pacman.conf` for resolve dependencies.
 ```
 [koompi]
 SigLevel = Never
-Server = https://repo.koompi.org/repo/x86_64
+Server = https://repo.koompi.org/kmp-apps
 ```
 
 ### Setup environment for build AUR package
